@@ -8,6 +8,7 @@ import {
   FaFileImage,
   FaCheck,
 } from "react-icons/fa";
+import { alert_error, alert_success } from "../utils/functions.js";
 import { IoIosMail } from "react-icons/io";
 import { MdSaveAlt, MdOutlineGroups2 } from "react-icons/md";
 import * as Yup from "yup";
@@ -18,11 +19,26 @@ import { BiSolidCity } from "react-icons/bi";
 import { MdMapsHomeWork } from "react-icons/md";
 import { MdDateRange } from "react-icons/md";
 import { FaUserGroup } from "react-icons/fa6";
+import { Toaster, toast } from "react-hot-toast";
 
-Modal.setAppElement("#root");
+const API_BACKEND_REGISTER = "http://127.0.0.1:3000/";
+
+const showLoadingToast = () => {
+  return toast.loading("Registrando...", {
+    position: "top-center",
+    // Personaliza el estilo del toast, aquí agregamos un spinner
+    style: {
+      padding: "10px 20px",
+      background: "#f1f1f1",
+      borderRadius: "8px",
+      fontWeight: "bold",
+    },
+  });
+};
 
 function RegisterUser() {
   const [messageVisible, setMessageVisible] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const hideMessage = () => {
     setMessageVisible(false);
@@ -37,94 +53,28 @@ function RegisterUser() {
     navigate("/administrador/docentes");
   };
 
-  const correoRegistrado = async (correo) => {
-    try {
-      const response = await axios.get("http://localhost:4000/api/usuarios");
-      const usuarios = response.data;
-      const usuarioEncontrado = usuarios.some(
-        (usuario) => String(usuario.correo) === String(correo)
-      );
-      return usuarioEncontrado;
-    } catch (error) {
-      console.error("Error al verificar el correo:", error);
-      return false;
-    }
-  };
-
-  const documentoRegistrado = async (identificacion) => {
-    try {
-      const response = await axios.get("http://localhost:4000/api/usuarios");
-      const usuarios = response.data;
-      const usuarioEncontrado = usuarios.some(
-        (usuario) => String(usuario.identificacion) === String(identificacion)
-      );
-      return usuarioEncontrado;
-    } catch (error) {
-      console.error("Error al verificar el documento:", error);
-      return false;
-    }
-  };
-
-  const telefonoRegistrado = async (telefono) => {
-    try {
-      const response = await axios.get("http://localhost:4000/api/usuarios");
-      const usuarios = response.data;
-      const usuarioEncontrado = usuarios.some(
-        (usuario) => String(usuario.telefono) === String(telefono)
-      );
-      return usuarioEncontrado;
-    } catch (error) {
-      console.error("Error al verificar el teléfono:", error);
-      return false;
-    }
-  };
-
   const validationSchema = Yup.object().shape({
     identificacion: Yup.string()
       .matches(
         /^\+?[0-9]{8,10}$/,
         "La cédula debe tener entre 8 y 10 dígitos numéricos"
       )
-      .required("El documento es requerido")
-      .test(
-        "check-duplicado",
-        "Documento ya registrado en el sistema",
-        async (identificacion) => {
-          const duplicado = await documentoRegistrado(identificacion);
-          return !duplicado;
-        }
-      ),
-    nombre: Yup.string()
+      .required("El documento es requerido"),
+    nombres: Yup.string()
       .max(50, "El nombre no puede tener más de 50 caracteres")
       .matches(/^[A-Za-z ]+$/, "Solo letras permitidas")
       .required("El nombre es requerido"),
-    apellido: Yup.string()
+    apellidos: Yup.string()
       .max(50, "El apellido no puede tener más de 50 caracteres")
       .matches(/^[A-Za-z ]+$/, "Solo letras permitidas")
       .required("El apellido es requerido"),
     telefono: Yup.string()
       .matches(/^\+?[0-9]{10}$/, "El teléfono debe tener 10 dígitos numéricos")
-      .required("El teléfono es requerido")
-      .test(
-        "check-duplicado",
-        "Teléfono ya registrado en el sistema",
-        async (telefono) => {
-          const duplicado = await telefonoRegistrado(telefono);
-          return !duplicado;
-        }
-      ),
+      .required("El teléfono es requerido"),
     correo: Yup.string()
       .max(125, "El correo no puede tener más de 125 caracteres")
       .email("Formato de correo electrónico inválido")
-      .required("El Correo es requerido")
-      .test(
-        "check-duplicado",
-        "El Correo ya está registrado en el sistema",
-        async (correo) => {
-          const duplicado = await correoRegistrado(correo);
-          return !duplicado;
-        }
-      ),
+      .required("El Correo es requerido"),
     direccion: Yup.string()
       .max(200, "La dirección no puede tener más de 200 caracteres")
       .required("La dirección es requerida"),
@@ -145,6 +95,7 @@ function RegisterUser() {
   return (
     <>
       <div>
+        <Toaster />
         <br />
         <h1
           style={{
@@ -166,8 +117,8 @@ function RegisterUser() {
           initialValues={{
             tipoIdentificacion: "CC",
             identificacion: "",
-            nombre: "",
-            apellido: "",
+            nombres: "",
+            apellidos: "",
             telefono: "",
             correo: "",
             direccion: "",
@@ -175,17 +126,66 @@ function RegisterUser() {
             genero: "",
             fechaNacimiento: "",
           }}
-          enableReinitialize={true}
           validationSchema={validationSchema}
           onSubmit={async (values, { setSubmitting, resetForm }) => {
+            setIsLoading(true); // Activa el mensaje "Registrando..."
+            const loadingToastId = showLoadingToast(); // Muestra el toast con el spinner
+
             try {
-              console.log(values);
-              await registerDocente(values);
-              resetForm();
+              const response = await axios.post(
+                `${API_BACKEND_REGISTER}register`,
+                values
+              );
+
+              // Usamos setTimeout para simular los 5 segundos antes de mostrar el mensaje de éxito/error
+              setTimeout(() => {
+                // Cierra el toast de carga
+                toast.remove(loadingToastId);
+
+                if (
+                  response.data.message &&
+                  Array.isArray(response.data.message)
+                ) {
+                  alert_error(
+                    "Error en el registro",
+                    response.data.message.join(", ")
+                  );
+                } else {
+                  alert_success(
+                    "Usuario Creado con éxito.",
+                    `Bienvenido ${response.data.nombres}.`
+                  );
+
+                  // Espera 5 segundos antes de recargar la página
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 5000);
+                }
+
+                console.log("Usuario registrado:", response.data);
+              }, 5000); // Simula los 5 segundos de espera
             } catch (error) {
-              console.error("Error al crear el docente:", error);
+              setTimeout(() => {
+                // Cierra el toast de carga
+                toast.remove(loadingToastId);
+
+                if (error.response && error.response.status === 400) {
+                  alert_error(
+                    "Error en el registro",
+                    error.response.data.message.join(", ")
+                  );
+                } else {
+                  alert_error(
+                    "Error",
+                    "Ha ocurrido un error inesperado. Intenta nuevamente."
+                  );
+                }
+                console.error("Error al registrar el usuario:", error.message);
+              }, 5000); // Simula 5 segundos de espera antes de mostrar el error
+            } finally {
+              setIsLoading(false); // Desactiva el estado de "Registrando..."
+              setSubmitting(false); // Finaliza el estado de envío
             }
-            setSubmitting(false);
           }}
         >
           {({
@@ -219,7 +219,7 @@ function RegisterUser() {
                       display: "flex",
                       margin: "16px",
                       alignItems: "center",
-                      marginBottom: errors.nombre ? "0" : "16px",
+                      marginBottom: errors.nombres ? "0" : "16px",
                     }}
                   >
                     <FaUser style={{ color: "black", fontSize: "1.2rem" }} />
@@ -240,11 +240,11 @@ function RegisterUser() {
                         fontFamily: "'Poppins', sans-serif",
                         fontSize: "0.9rem",
                       }}
-                      name="nombre"
+                      name="nombres"
                       onChange={handleChange}
                     />
                   </div>
-                  {errors.nombre && touched.nombre && messageVisible && (
+                  {errors.nombres && touched.nombres && messageVisible && (
                     <div
                       style={{
                         color: "red",
@@ -254,7 +254,7 @@ function RegisterUser() {
                         transition: "opacity 0.5s ease, visibility 0s 0.5s", // Transición suave
                       }}
                     >
-                      {errors.nombre}
+                      {errors.nombres}
                     </div>
                   )}
                   {/* Apellidos */}
@@ -263,7 +263,7 @@ function RegisterUser() {
                       display: "flex",
                       margin: "16px",
                       alignItems: "center",
-                      marginBottom: errors.apellido ? "0" : "16px",
+                      marginBottom: errors.apellidos ? "0" : "16px",
                     }}
                   >
                     <FaUser style={{ color: "black", fontSize: "1.2rem" }} />
@@ -284,11 +284,11 @@ function RegisterUser() {
                         fontFamily: "'Poppins', sans-serif",
                         fontSize: "0.9rem",
                       }}
-                      name="apellido"
+                      name="apellidos"
                       onChange={handleChange}
                     />
                   </div>
-                  {errors.apellido && touched.apellido && messageVisible && (
+                  {errors.apellidos && touched.apellidos && messageVisible && (
                     <div
                       style={{
                         color: "red",
@@ -298,7 +298,7 @@ function RegisterUser() {
                         transition: "opacity 0.5s ease, visibility 0s 0.5s", // Transición suave
                       }}
                     >
-                      {errors.apellido}
+                      {errors.apellidos}
                     </div>
                   )}
 
@@ -564,52 +564,52 @@ function RegisterUser() {
                   )}
 
                   {/* Fecha de Nacimiento */}
-                  <div
-                    style={{
-                      display: "flex",
-                      margin: "16px",
-                      alignItems: "center",
-                      marginBottom: errors.fechaNacimiento ? "0" : "16px",
-                    }}
-                  >
-                    <MdDateRange
-                      style={{ color: "black", fontSize: "1.6rem" }}
-                    />
-                    <input
-                      type="date"
-                      style={{
-                        margin: "12px",
-                        height: "48px",
-                        border: "none",
-                        borderBottom: "2px solid black",
-                        backgroundColor: "#F5F5F5",
-                        color: "black",
-                        width: "100%",
-                        paddingLeft: "16px",
-                        outline: "none",
-                        borderRadius: "3px",
-                        fontFamily: "'Poppins', sans-serif",
-                        fontSize: "0.9rem",
-                      }}
-                      name="fechaNacimiento"
-                      onChange={handleChange}
-                    />
-                  </div>
-                  {errors.fechaNacimiento &&
-                    touched.fechaNacimiento &&
-                    messageVisible && (
-                      <div
-                        style={{
-                          color: "red",
-                          textAlign: "center",
-                          opacity: messageVisible ? 1 : 0,
-                          visibility: messageVisible ? "visible" : "hidden",
-                          transition: "opacity 0.5s ease, visibility 0s 0.5s", // Transición suave
-                        }}
-                      >
-                        {errors.fechaNacimiento}
-                      </div>
-                    )}
+<div
+  style={{
+    display: "flex",
+    margin: "16px",
+    alignItems: "center",
+    marginBottom: errors.fechaNacimiento ? "0" : "16px",
+  }}
+>
+  <MdDateRange
+    style={{ color: "black", fontSize: "1.6rem" }}
+  />
+  <input
+    type="date"
+    style={{
+      margin: "12px",
+      height: "48px",
+      border: "none",
+      borderBottom: "2px solid black",
+      backgroundColor: "#F5F5F5",
+      color: "black",
+      width: "100%",
+      paddingLeft: "16px",
+      outline: "none",
+      borderRadius: "3px",
+      fontFamily: "'Poppins', sans-serif",
+      fontSize: "0.9rem",
+    }}
+    name="fechaNacimiento"
+    onChange={handleChange}
+    placeholder="Fecha de Nacimiento"  // Establece un placeholder visual
+    value={values.fechaNacimiento || ""}  // Muestra una fecha vacía si no hay valor
+  />
+</div>
+{errors.fechaNacimiento && touched.fechaNacimiento && messageVisible && (
+  <div
+    style={{
+      color: "red",
+      textAlign: "center",
+      opacity: messageVisible ? 1 : 0,
+      visibility: messageVisible ? "visible" : "hidden",
+      transition: "opacity 0.5s ease, visibility 0s 0.5s", // Transición suave
+    }}
+  >
+    {errors.fechaNacimiento}
+  </div>
+)}
                   {/* Género */}
                   <div
                     style={{
