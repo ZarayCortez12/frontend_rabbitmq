@@ -4,7 +4,7 @@ import { FaRegIdCard } from "react-icons/fa";
 import { alert_error, alert_success } from "../utils/functions.js";
 import { IoIosMail } from "react-icons/io";
 import * as Yup from "yup";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
 
@@ -99,7 +99,12 @@ function loginUser() {
                   );
                 } else {
                   alert_success("Inicio de Sesión Exitoso", "Bienvenido!");
-                  navigate("/panel");
+                  localStorage.setItem("identificacion", values.identificacion);
+
+                  // Usamos setTimeout para darle un breve tiempo al mensaje antes de navegar
+                  setTimeout(() => {
+                    navigate("/panel");
+                  }, 1500); // Redirige después de 1.5 segundos
                 }
 
                 console.log("Usuario registrado:", response.data);
