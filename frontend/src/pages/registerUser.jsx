@@ -153,7 +153,7 @@ function RegisterUser() {
                 } else {
                   alert_success(
                     "Usuario Creado con éxito.",
-                    `Bienvenido ${response.data.nombres}.`
+                    `Revisa tu correo para confirmar tu registro.`
                   );
 
                   // Espera 5 segundos antes de recargar la página
