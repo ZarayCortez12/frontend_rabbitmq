@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 export function alert_success(success, message) {
   toast.success(success + "\n" + message, {
     duration: 1500,
-    position: "top-center",
+    position: "bottom-center",
     style: {
       padding: "10px 20px",
       background: "#f1f1f1",
@@ -16,7 +16,7 @@ export function alert_success(success, message) {
 
 export function alert_error(error, message) {
   toast.error(error + "\n" + message, {
-    position: "top-center",
+    position: "bottom-center",
     style: {
       padding: "10px 20px",
       background: "#f1f1f1",

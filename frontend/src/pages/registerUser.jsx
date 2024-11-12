@@ -564,52 +564,54 @@ function RegisterUser() {
                   )}
 
                   {/* Fecha de Nacimiento */}
-<div
-  style={{
-    display: "flex",
-    margin: "16px",
-    alignItems: "center",
-    marginBottom: errors.fechaNacimiento ? "0" : "16px",
-  }}
->
-  <MdDateRange
-    style={{ color: "black", fontSize: "1.6rem" }}
-  />
-  <input
-    type="date"
-    style={{
-      margin: "12px",
-      height: "48px",
-      border: "none",
-      borderBottom: "2px solid black",
-      backgroundColor: "#F5F5F5",
-      color: "black",
-      width: "100%",
-      paddingLeft: "16px",
-      outline: "none",
-      borderRadius: "3px",
-      fontFamily: "'Poppins', sans-serif",
-      fontSize: "0.9rem",
-    }}
-    name="fechaNacimiento"
-    onChange={handleChange}
-    placeholder="Fecha de Nacimiento"  // Establece un placeholder visual
-    value={values.fechaNacimiento || ""}  // Muestra una fecha vacía si no hay valor
-  />
-</div>
-{errors.fechaNacimiento && touched.fechaNacimiento && messageVisible && (
-  <div
-    style={{
-      color: "red",
-      textAlign: "center",
-      opacity: messageVisible ? 1 : 0,
-      visibility: messageVisible ? "visible" : "hidden",
-      transition: "opacity 0.5s ease, visibility 0s 0.5s", // Transición suave
-    }}
-  >
-    {errors.fechaNacimiento}
-  </div>
-)}
+                  <div
+                    style={{
+                      display: "flex",
+                      margin: "16px",
+                      alignItems: "center",
+                      marginBottom: errors.fechaNacimiento ? "0" : "16px",
+                    }}
+                  >
+                    <MdDateRange
+                      style={{ color: "black", fontSize: "1.6rem" }}
+                    />
+                    <input
+                      type="date"
+                      style={{
+                        margin: "12px",
+                        height: "48px",
+                        border: "none",
+                        borderBottom: "2px solid black",
+                        backgroundColor: "#F5F5F5",
+                        color: "black",
+                        width: "100%",
+                        paddingLeft: "16px",
+                        outline: "none",
+                        borderRadius: "3px",
+                        fontFamily: "'Poppins', sans-serif",
+                        fontSize: "0.9rem",
+                      }}
+                      name="fechaNacimiento"
+                      onChange={handleChange}
+                      placeholder="Fecha de Nacimiento" // Establece un placeholder visual
+                      value={values.fechaNacimiento || ""} // Muestra una fecha vacía si no hay valor
+                    />
+                  </div>
+                  {errors.fechaNacimiento &&
+                    touched.fechaNacimiento &&
+                    messageVisible && (
+                      <div
+                        style={{
+                          color: "red",
+                          textAlign: "center",
+                          opacity: messageVisible ? 1 : 0,
+                          visibility: messageVisible ? "visible" : "hidden",
+                          transition: "opacity 0.5s ease, visibility 0s 0.5s", // Transición suave
+                        }}
+                      >
+                        {errors.fechaNacimiento}
+                      </div>
+                    )}
                   {/* Género */}
                   <div
                     style={{
